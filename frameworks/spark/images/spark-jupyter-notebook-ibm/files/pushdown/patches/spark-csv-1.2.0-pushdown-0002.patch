@@ -1,0 +1,106 @@
+diff --git a/build.sbt b/build.sbt
+index 29e659a..795c571 100755
+--- a/build.sbt
++++ b/build.sbt
+@@ -59,7 +59,7 @@ pomExtra := (
+ 
+ spName := "databricks/spark-csv"
+ 
+-sparkVersion := "1.4.0"
++sparkVersion := "1.6.0"
+ 
+ sparkComponents += "sql"
+ 
+@@ -67,6 +67,9 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.1" % "test"
+ 
+ libraryDependencies += "com.novocode" % "junit-interface" % "0.9" % "test"
+ 
++libraryDependencies +=  "org.apache.hadoop" % "hadoop-client" % "2.7.1" 
++
++
+ ScoverageSbtPlugin.ScoverageKeys.coverageHighlighting := {
+   if (scalaBinaryVersion.value == "2.10") false
+   else false
+diff --git a/src/main/scala/com/databricks/spark/csv/CsvRelation.scala b/src/main/scala/com/databricks/spark/csv/CsvRelation.scala
+index eddd2b5..22c1ced 100755
+--- a/src/main/scala/com/databricks/spark/csv/CsvRelation.scala
++++ b/src/main/scala/com/databricks/spark/csv/CsvRelation.scala
+@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory
+ 
+ import org.apache.spark.rdd.RDD
+ import org.apache.spark.sql._
+-import org.apache.spark.sql.sources.{BaseRelation, InsertableRelation, TableScan}
++import org.apache.spark.sql.sources.{Filter, BaseRelation, InsertableRelation, PrunedFilteredScan}
+ import org.apache.spark.sql.types._
+ import com.databricks.spark.csv.util._
+ import com.databricks.spark.sql.readers._
+@@ -45,7 +45,7 @@ case class CsvRelation protected[spark] (
+     userSchema: StructType = null,
+     charset: String = TextFile.DEFAULT_CHARSET.name(),
+     inferCsvSchema: Boolean)(@transient val sqlContext: SQLContext)
+-  extends BaseRelation with TableScan with InsertableRelation {
++  extends BaseRelation with PrunedFilteredScan with InsertableRelation {
+ 
+   /**
+    * Limit the number of lines we'll search for a header row that isn't comment-prefixed.
+@@ -69,7 +69,7 @@ case class CsvRelation protected[spark] (
+ 
+   val schema = inferSchema()
+ 
+-  def tokenRdd(header: Array[String]): RDD[Array[String]] = {
++  def tokenRdd(header: Array[String], requiredColumns:Array[String] = null, filters: String = null): RDD[Array[String]] = {
+ 
+     val baseRDD = TextFile.withCharset(sqlContext.sparkContext, location, charset)
+ 
+@@ -87,7 +87,21 @@ case class CsvRelation protected[spark] (
+       // If header is set, make sure firstLine is materialized before sending to executors.
+       val filterLine = if (useHeader) firstLine else null
+ 
+-      baseRDD.mapPartitions { iter =>
++      logger.debug("Schema is " + schema.mkString(","))
++      if (requiredColumns != null && filters != null) {
++        logger.debug("Going to modify requiredColumns")
++        val updatedColumns = requiredColumns.map(x => getElementID(x))
++        logger.debug(updatedColumns.mkString(":"))
++        val columnsMap = collection.mutable.Map[String, String]()
++        requiredColumns.foreach(x => columnsMap.put(x, getElementID(x)))
++        logger.debug(columnsMap.mkString(" "))
++        val newFilter = censor(filters, columnsMap)
++
++
++        logger.warn(newFilter)
++        baseRDD.setPredicate(updatedColumns.mkString(":"), newFilter)
++      }
++        baseRDD.mapPartitions { iter =>
+         // When using header, any input line that equals firstLine is assumed to be header
+         val csvIter = if (useHeader) {
+           iter.filter(_ != filterLine)
+@@ -100,9 +114,9 @@ case class CsvRelation protected[spark] (
+   }
+ 
+   // By making this a lazy val we keep the RDD around, amortizing the cost of locating splits.
+-  def buildScan = {
++  def buildScan(requiredColumns: Array[String], filters: Array[Filter]): RDD[Row] = {
+     val schemaFields = schema.fields
+-    tokenRdd(schemaFields.map(_.name)).flatMap{ tokens =>
++    tokenRdd(schemaFields.map(_.name), requiredColumns, filters.mkString(" ")).flatMap{ tokens =>
+ 
+       if (dropMalformed && schemaFields.length != tokens.size) {
+         logger.warn(s"Dropping malformed line: $tokens")
+@@ -238,4 +252,16 @@ case class CsvRelation protected[spark] (
+       sys.error("CSV tables only support INSERT OVERWRITE for now.")
+     }
+   }
++
++  private def getElementID(elementName : String): String = {
++    val schemaFields = schema.fields
++    val tmp2 = schemaFields.indexWhere(x => x.name equals(elementName))
++    logger.debug(s"Found ${tmp2} for ${elementName}")
++    tmp2.toString
++
++  }
++
++  def censor(text: String, replacements: collection.mutable.Map[String, String]): String = {
++    replacements.foldLeft(text)((t, r) => t.replace(r._1, r._2))
++  }
+ }
