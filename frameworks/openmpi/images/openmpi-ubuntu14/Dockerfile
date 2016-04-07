@@ -23,7 +23,7 @@ EXPOSE 22
 
 VOLUME /mnt/workspace
 
-CWD /mnt/workspace
+WORKDIR /mnt/workspace
 
 CMD ["/usr/sbin/sshd", "-D"]
 
