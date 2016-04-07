@@ -59,4 +59,3 @@ docs/_build/
 target/
 .idea/
 state.zoe
-*.conf

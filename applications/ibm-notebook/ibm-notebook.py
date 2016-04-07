@@ -32,10 +32,10 @@ SPARK_WORKER_MEMORY_LIMIT = 12 * (1024 ** 3)  # 12GB
 NOTEBOOK_MEMORY_LIMIT = 4 * (1024 ** 3)  # 4GB, contains also the Spark client
 SPARK_WORKER_CORES = 6
 SPARK_WORKER_COUNT = 2
-DOCKER_REGISTRY = '192.168.45.252:5000'  # Set to None to use images from the Docker Hub
-SPARK_MASTER_IMAGE = 'iostack/spark-master-ibm'
-SPARK_WORKER_IMAGE = 'iostack/spark-worker-ibm'
-NOTEBOOK_IMAGE = 'iostack/spark-jupyter-notebook-ibm'
+DOCKER_REGISTRY = '172.17.131.201:5000'  # Set to None to use images from the Docker Hub
+SPARK_MASTER_IMAGE = 'iostackrepo/spark-master-ibm'
+SPARK_WORKER_IMAGE = 'iostackrepo/spark-worker-ibm'
+NOTEBOOK_IMAGE = 'iostackrepo/spark-jupyter-notebook-ibm'
 
 
 #####################
