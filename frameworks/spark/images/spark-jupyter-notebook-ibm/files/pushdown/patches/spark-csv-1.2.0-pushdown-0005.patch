@@ -1,5 +1,5 @@
 diff --git a/build.sbt b/build.sbt
-index 29e659a..795c571 100755
+index 29e659a..51be6b6 100755
 --- a/build.sbt
 +++ b/build.sbt
 @@ -59,7 +59,7 @@ pomExtra := (
@@ -7,7 +7,7 @@ index 29e659a..795c571 100755
  spName := "databricks/spark-csv"
  
 -sparkVersion := "1.4.0"
-+sparkVersion := "1.6.0"
++sparkVersion := "1.6.1"
  
  sparkComponents += "sql"
  
@@ -22,7 +22,7 @@ index 29e659a..795c571 100755
    if (scalaBinaryVersion.value == "2.10") false
    else false
 diff --git a/src/main/scala/com/databricks/spark/csv/CsvRelation.scala b/src/main/scala/com/databricks/spark/csv/CsvRelation.scala
-index eddd2b5..22c1ced 100755
+index eddd2b5..8ba5d93 100755
 --- a/src/main/scala/com/databricks/spark/csv/CsvRelation.scala
 +++ b/src/main/scala/com/databricks/spark/csv/CsvRelation.scala
 @@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory
@@ -75,19 +75,20 @@ index eddd2b5..22c1ced 100755
          // When using header, any input line that equals firstLine is assumed to be header
          val csvIter = if (useHeader) {
            iter.filter(_ != filterLine)
-@@ -100,9 +114,9 @@ case class CsvRelation protected[spark] (
+@@ -100,9 +114,10 @@ case class CsvRelation protected[spark] (
    }
  
    // By making this a lazy val we keep the RDD around, amortizing the cost of locating splits.
 -  def buildScan = {
 +  def buildScan(requiredColumns: Array[String], filters: Array[Filter]): RDD[Row] = {
++    logger.warn(s" CsvRelation1.2 - buildScan PUSHDOWN case")
      val schemaFields = schema.fields
 -    tokenRdd(schemaFields.map(_.name)).flatMap{ tokens =>
 +    tokenRdd(schemaFields.map(_.name), requiredColumns, filters.mkString(" ")).flatMap{ tokens =>
  
        if (dropMalformed && schemaFields.length != tokens.size) {
          logger.warn(s"Dropping malformed line: $tokens")
-@@ -238,4 +252,16 @@ case class CsvRelation protected[spark] (
+@@ -238,4 +253,16 @@ case class CsvRelation protected[spark] (
        sys.error("CSV tables only support INSERT OVERWRITE for now.")
      }
    }

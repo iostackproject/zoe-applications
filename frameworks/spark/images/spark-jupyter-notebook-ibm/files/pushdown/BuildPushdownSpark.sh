@@ -26,7 +26,7 @@
 E_BADARGS=65  # Exit error code
 BASENAME=`basename $0`
 BASEFOLDER=$(dirname $(readlink -f ${0}))
-VERSION=0.18
+VERSION=0.23
 
 ### BUILD_DIR is the directory in which hadoop, spark, spark-csv, joss and stocator are built
 BUILD_DIR="${BASEFOLDER}/build"
@@ -123,6 +123,7 @@ installJoss ()
         cmdLine="git clone $JOSS_GIT_SITE"; runNextStep
         cd $JOSS_DIR_NAME
         cmdLine="git checkout tags/$JOSS_PREFIX$JOSS_VERSION"; runNextStep
+		cmdLine="git checkout -b "my-"$JOSS_PREFIX$JOSS_VERSION"; runNextStep
     else
         echo "skiping the clone, checkout and patch steps "
     fi
@@ -141,6 +142,7 @@ installStocator ()
         cmdLine="git clone $STOCATOR_GIT_SITE"; runNextStep
         cd $STOCATOR_DIR_NAME
         cmdLine="git checkout tags/$STOCATOR_PREFIX$STOCATOR_VERSION"; runNextStep
+		cmdLine="git checkout -b "my-"$STOCATOR_PREFIX$STOCATOR_VERSION"; runNextStep
     else
         echo "skiping the clone, checkout and patch steps "
     fi
@@ -240,14 +242,14 @@ compileSpark ()
 echo "Pushdown build started with $BASENAME version $VERSION ...started at " `date`
 
 HADOOP_VERSION=2.7.1   # with 2.6.0 the swift test from local spark VM fails
-SPARK_VERSION=1.6.0
+SPARK_VERSION=1.6.1
 SPARK_CSV_VERSION=1.2.0
-STOCATOR_VERSION=pushdown-v0.1
+STOCATOR_VERSION=pushdown-v0.3
 JOSS_VERSION=pushdown-v0.2
 
-HADOOP_PATCH_NUMBER=0001
-SPARK_PATCH_NUMBER=0003   # 0003 is the version with fixed HadoopRDD (no Broadcast)  0004 is the version which tries to compile Stocator within Spark (but fails on run...)
-CSV_SPARK_PATCH_NUMBER=0002
+HADOOP_PATCH_NUMBER=0002
+SPARK_PATCH_NUMBER=0004   # 0003 is the version with fixed HadoopRDD (no Broadcast)  0004 is the version which tries to compile Stocator within Spark (but fails on run...)
+CSV_SPARK_PATCH_NUMBER=0005
 #STOCATOR_PATCH_NUMBER=NewSeekStructure0005
 #JOSS_PATCH_NUMBER=0001
 

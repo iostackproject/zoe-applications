@@ -41,13 +41,15 @@ WORKDIR /usr/local/src/
 RUN git clone https://github.com/ymoatti/pushdown-joss
 WORKDIR /usr/local/src/pushdown-joss
 RUN git checkout tags/pushdown-v0.2
+RUN git checkout -b my-pushdown-v0.2
 RUN mvn install
 
 # IBM-STOCATOR Installation
 WORKDIR /usr/local/src/
 RUN git clone https://github.com/ymoatti/pushdown-stocator
 WORKDIR /usr/local/src/pushdown-stocator
-RUN git checkout tags/pushdown-v0.1
+RUN git checkout tags/pushdown-v0.3
+RUN git checkout -b my-pushdown-v0.3
 RUN mvn install
 RUN ln -s /usr/local/src/pushdown-stocator /opt/stocator
 

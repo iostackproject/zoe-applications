@@ -1,5 +1,5 @@
 diff --git a/core/pom.xml b/core/pom.xml
-index 15b8d75..5ea9986 100644
+index 1399103..14e504c 100644
 --- a/core/pom.xml
 +++ b/core/pom.xml
 @@ -267,6 +267,28 @@
@@ -32,13 +32,15 @@ index 15b8d75..5ea9986 100644
        <groupId>org.tachyonproject</groupId>
        <artifactId>tachyon-client</artifactId>
 diff --git a/core/src/main/scala/org/apache/spark/rdd/HadoopRDD.scala b/core/src/main/scala/org/apache/spark/rdd/HadoopRDD.scala
-index f37c95b..b25af4f 100644
+index f37c95b..c6b0e42 100644
 --- a/core/src/main/scala/org/apache/spark/rdd/HadoopRDD.scala
 +++ b/core/src/main/scala/org/apache/spark/rdd/HadoopRDD.scala
-@@ -139,6 +139,21 @@ class HadoopRDD[K, V](
+@@ -138,6 +138,20 @@ class HadoopRDD[K, V](
+   private val createTime = new Date()
  
    private val shouldCloneJobConf = sparkContext.conf.getBoolean("spark.hadoop.cloneConf", false)
- 
++  private val sqlPushdownEnabled = sparkContext.conf.getBoolean("spark.pushdown", false)
++
 +  // YM Start
 +  final val NotINITIALIZED = "NotInitialized"
 +  private var thePredicate = NotINITIALIZED
@@ -46,18 +48,15 @@ index f37c95b..b25af4f 100644
 +  // YM End
 +
 +  override def setPredicate(projection: String, predicate: String): String = {
-+    logWarning("set predicate: projection=" + projection +", predicate=" + predicate )
-+  // YM Start
++    logWarning("set predicate: projection=" + projection +", predicate=" + predicate + " sqlPushdownEnabled = " + sqlPushdownEnabled)
 +    thePredicate  = predicate
 +    theProjection = projection
-+  // YM End
 +    ""
 +  }
-+
+ 
    // Returns a JobConf that will be used on slaves to obtain input splits for Hadoop reads.
    protected def getJobConf(): JobConf = {
-     val conf: Configuration = broadcastedConf.value.value
-@@ -205,12 +220,29 @@ class HadoopRDD[K, V](
+@@ -205,12 +219,29 @@ class HadoopRDD[K, V](
    }
  
    override def compute(theSplit: Partition, context: TaskContext): InterruptibleIterator[(K, V)] = {
@@ -87,8 +86,25 @@ index f37c95b..b25af4f 100644
        val inputMetrics = context.taskMetrics.getInputMetricsForReadMethod(DataReadMethod.Hadoop)
  
        // Sets the thread local variable for the file's name
+@@ -251,6 +282,10 @@ class HadoopRDD[K, V](
+         if (!finished) {
+           inputMetrics.incRecordsRead(1)
+         }
++        // else {
++        //   logWarning("YYYEEE " + theSplit.index + " FINISHED for me ")
++        // }
++        // logWarning("YYYEEE " + theSplit.index + " next record = " + key + " value=" + value)
+         (key, value)
+       }
+ 
+@@ -424,4 +459,5 @@ private[spark] object HadoopRDD extends Logging {
+     }}
+     out.seq
+   }
++
+ }
 diff --git a/core/src/main/scala/org/apache/spark/rdd/MapPartitionsRDD.scala b/core/src/main/scala/org/apache/spark/rdd/MapPartitionsRDD.scala
-index 4312d3a..ea79d9a 100644
+index e4587c9..61ea2ed 100644
 --- a/core/src/main/scala/org/apache/spark/rdd/MapPartitionsRDD.scala
 +++ b/core/src/main/scala/org/apache/spark/rdd/MapPartitionsRDD.scala
 @@ -34,6 +34,10 @@ private[spark] class MapPartitionsRDD[U: ClassTag, T: ClassTag](
@@ -101,9 +117,9 @@ index 4312d3a..ea79d9a 100644
 +  }
    override def compute(split: Partition, context: TaskContext): Iterator[U] =
      f(context, split.index, firstParent[T].iterator(split, context))
- }
+ 
 diff --git a/core/src/main/scala/org/apache/spark/rdd/RDD.scala b/core/src/main/scala/org/apache/spark/rdd/RDD.scala
-index 9fe9d83..4e76ef3 100644
+index 2fb8047..803b5aa 100644
 --- a/core/src/main/scala/org/apache/spark/rdd/RDD.scala
 +++ b/core/src/main/scala/org/apache/spark/rdd/RDD.scala
 @@ -126,6 +126,8 @@ abstract class RDD[T: ClassTag](
@@ -116,7 +132,7 @@ index 9fe9d83..4e76ef3 100644
    @transient val partitioner: Option[Partitioner] = None
  
 diff --git a/pom.xml b/pom.xml
-index bbee213..8bdb27b 100644
+index b1a5d28..35d9abd 100644
 --- a/pom.xml
 +++ b/pom.xml
 @@ -1,20 +1,20 @@
@@ -155,7 +171,7 @@ index bbee213..8bdb27b 100644
  
  <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-@@ -190,12 +190,12 @@
+@@ -189,12 +189,12 @@
      <test.exclude.tags></test.exclude.tags>
  
      <!--
@@ -173,7 +189,7 @@ index bbee213..8bdb27b 100644
      -->
      <flume.deps.scope>compile</flume.deps.scope>
      <hadoop.deps.scope>compile</hadoop.deps.scope>
-@@ -205,8 +205,8 @@
+@@ -204,8 +204,8 @@
      <parquet.test.deps.scope>test</parquet.test.deps.scope>
  
      <!--
@@ -184,7 +200,7 @@ index bbee213..8bdb27b 100644
      -->
      <spark.test.home>${session.executionRootDirectory}</spark.test.home>
  
-@@ -329,8 +329,8 @@
+@@ -328,8 +328,8 @@
    </pluginRepositories>
    <dependencies>
      <!--
@@ -195,7 +211,7 @@ index bbee213..8bdb27b 100644
      -->
      <dependency>
        <groupId>org.spark-project.spark</groupId>
-@@ -338,8 +338,8 @@
+@@ -337,8 +337,8 @@
        <version>1.0.0</version>
      </dependency>
      <!--
@@ -206,7 +222,7 @@ index bbee213..8bdb27b 100644
      -->
      <dependency>
        <groupId>org.scalatest</groupId>
-@@ -913,6 +913,23 @@
+@@ -912,6 +912,23 @@
          </exclusions>
        </dependency>
        <dependency>
@@ -230,7 +246,7 @@ index bbee213..8bdb27b 100644
          <groupId>org.apache.avro</groupId>
          <artifactId>avro</artifactId>
          <version>${avro.version}</version>
-@@ -1305,9 +1322,9 @@
+@@ -1310,9 +1327,9 @@
        <dependency>
          <groupId>${hive.group}</groupId>
          <artifactId>hive-exec</artifactId>
@@ -243,7 +259,7 @@ index bbee213..8bdb27b 100644
          <version>${hive.version}</version>
          <scope>${hive.deps.scope}</scope>
          <exclusions>
-@@ -1332,7 +1349,7 @@
+@@ -1337,7 +1354,7 @@
            </exclusion>
  
            <!-- excluded dependencies & transitive.
@@ -252,7 +268,7 @@ index bbee213..8bdb27b 100644
            <exclusion>
              <groupId>ant</groupId>
              <artifactId>ant</artifactId>
-@@ -1616,8 +1633,8 @@
+@@ -1621,8 +1638,8 @@
        </dependency>
  
        <!-- hive shims pulls in hive 0.23 and a transitive dependency of the Hadoop version
@@ -263,7 +279,7 @@ index bbee213..8bdb27b 100644
        <dependency>
          <groupId>${hive.group}</groupId>
          <artifactId>hive-shims</artifactId>
-@@ -1756,7 +1773,7 @@
+@@ -1761,7 +1778,7 @@
              <artifactId>janino</artifactId>
            </exclusion>
            <!-- hsqldb interferes with the use of derby as the default db
@@ -272,7 +288,7 @@ index bbee213..8bdb27b 100644
            -->
            <exclusion>
              <groupId>org.hsqldb</groupId>
-@@ -1969,8 +1986,8 @@
+@@ -1987,8 +2004,8 @@
              <argLine>-Xmx3g -Xss4096k -XX:MaxPermSize=${MaxPermGen} -XX:ReservedCodeCacheSize=512m</argLine>
              <environmentVariables>
                <!--
@@ -283,7 +299,7 @@ index bbee213..8bdb27b 100644
                -->
                <SPARK_DIST_CLASSPATH>${test_classpath}</SPARK_DIST_CLASSPATH>
                <SPARK_PREPEND_CLASSES>1</SPARK_PREPEND_CLASSES>
-@@ -2008,8 +2025,8 @@
+@@ -2026,8 +2043,8 @@
              <stderr/>
              <environmentVariables>
                <!--
@@ -294,7 +310,7 @@ index bbee213..8bdb27b 100644
                -->
                <SPARK_DIST_CLASSPATH>${test_classpath}</SPARK_DIST_CLASSPATH>
                <SPARK_PREPEND_CLASSES>1</SPARK_PREPEND_CLASSES>
-@@ -2190,8 +2207,8 @@
+@@ -2225,8 +2242,8 @@
        </plugin>
  
        <!--
@@ -305,7 +321,7 @@ index bbee213..8bdb27b 100644
        -->
        <plugin>
          <groupId>org.apache.maven.plugins</groupId>
-@@ -2227,8 +2244,8 @@
+@@ -2262,8 +2279,8 @@
                <shadedPattern>org.spark-project.guava</shadedPattern>
                <excludes>
                  <!--
@@ -316,7 +332,7 @@ index bbee213..8bdb27b 100644
                  -->
                  <exclude>com/google/common/base/Absent*</exclude>
                  <exclude>com/google/common/base/Function</exclude>
-@@ -2338,8 +2355,8 @@
+@@ -2373,8 +2390,8 @@
    <profiles>
  
      <!--
@@ -327,7 +343,7 @@ index bbee213..8bdb27b 100644
      -->
      <profile>
        <id>sbt</id>
-@@ -2416,7 +2433,7 @@
+@@ -2451,7 +2468,7 @@
      <!-- A series of build profiles where customizations for particular Hadoop releases can be made -->
  
      <!-- Hadoop-a.b.c dependencies can be found at
@@ -336,7 +352,7 @@ index bbee213..8bdb27b 100644
      -->
  
      <profile>
-@@ -2434,7 +2451,7 @@
+@@ -2469,7 +2486,7 @@
  
      <profile>
        <id>hadoop-2.2</id>
@@ -345,7 +361,7 @@ index bbee213..8bdb27b 100644
      </profile>
  
      <profile>
-@@ -2522,9 +2539,9 @@
+@@ -2557,9 +2574,9 @@
      </profile>
  
      <!--
@@ -359,7 +375,7 @@ index bbee213..8bdb27b 100644
      <profile>
        <id>flume-provided</id>
 diff --git a/sql/core/pom.xml b/sql/core/pom.xml
-index 84ac87b..02b6daa 100644
+index 9bff1e5..159163f 100644
 --- a/sql/core/pom.xml
 +++ b/sql/core/pom.xml
 @@ -65,6 +65,10 @@
