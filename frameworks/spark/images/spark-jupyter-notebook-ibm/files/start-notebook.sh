@@ -2,13 +2,13 @@
 
 set -x
 
-mkdir -p /etc/hadoop/conf/
-cat /opt/core-site.xml | sed -e "s/XXX_NAMENODE_HOST/$NAMENODE_HOST/" > /etc/hadoop/conf/core-site.xml
-cp /opt/hdfs-site.xml /etc/hadoop/conf/
+#mkdir -p /etc/hadoop/conf/
+#cat /opt/core-site.xml | sed -e "s/XXX_NAMENODE_HOST/$NAMENODE_HOST/" > /etc/hadoop/conf/core-site.xml
+#cp /opt/hdfs-site.xml /etc/hadoop/conf/
 
 
 cat /opt/spark-defaults.conf | sed -e "s/XXX_DRIVER_MEMORY/$SPARK_DRIVER_RAM/" | sed -e "s/XXX_EXECUTOR_MEMORY/${SPARK_EXECUTOR_RAM}/" | sed -e "s#XXX_MASTER#${SPARK_MASTER}#" > ${SPARK_HOME}/conf/spark-defaults.conf
-echo -e "HADOOP_CONF_DIR=/etc/hadoop/conf" > ${SPARK_HOME}/conf/spark-env.sh
+#echo -e "HADOOP_CONF_DIR=/etc/hadoop/conf" > ${SPARK_HOME}/conf/spark-env.sh
 
 
 if getent passwd $NB_USER; then
