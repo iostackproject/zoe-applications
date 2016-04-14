@@ -3,8 +3,10 @@
 set -x
 
 cat /opt/spark-defaults.conf | sed -e "s/XXX_DRIVER_MEMORY/$SPARK_DRIVER_RAM/" | sed -e "s/XXX_EXECUTOR_MEMORY/${SPARK_EXECUTOR_RAM}/" | sed -e "s#XXX_MASTER#${SPARK_MASTER}#" > ${SPARK_HOME}/conf/spark-defaults.conf
-cat /opt/core-site.xml | sed -e "s/XXX_NAMENODE_HOST/$NAMENODE_HOST/" > ${HADOOP_HOME}/etc/hadoop/core-site.xml
-cp /opt/hdfs-site.xml ${HADOOP_HOME}/etc/hadoop/
+mkdir -p /etc/hadoop/
+cat /opt/core-site.xml | sed -e "s/XXX_NAMENODE_HOST/$NAMENODE_HOST/" > /etc/hadoop/core-site.xml
+cp /opt/hdfs-site.xml /etc/hadoop/
+echo -e "HADOOP_CONF_DIR=/etc/hadoop/conf\nHADOOP_HOME=/etc/hadoop\n" > ${SPARK_HOME}/conf/spark-env.sh
 
 if getent passwd $NB_USER; then
 	echo "User $NB_USER already exists"
