@@ -59,6 +59,7 @@ COPY files/pushdown/ /opt/pushdown/
 RUN /bin/bash /opt/pushdown/BuildPushdownSpark.sh
 WORKDIR /opt
 RUN ln -s pushdown/build/spark spark
+RUN ln -s pushdown/build/spark-csv spark-csv
 ENV SPARK_HOME /opt/spark
 ENV PATH /opt/spark/bin:/opt/spark/sbin:${PATH}
 
