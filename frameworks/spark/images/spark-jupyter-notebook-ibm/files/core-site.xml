@@ -74,17 +74,17 @@
     <name>fs.defaultFS</name>
     <value>hdfs://doop-mng1.haifa.ibm.com:8020</value>
   </property> -->
-  <property>
+<!--   <property>
     <name>io.file.buffer.size</name>
     <value>131072</value>
-  </property>
+  </property> -->
   <!--
       <property>
       <name>net.topology.script.file.name</name>
       <value>/etc/hadoop/conf/rack-topology.sh</value>
       </property>
   -->
-  <property>
+  <!-- <property>
     <name>ipc.client.idlethreshold</name>
     <value>8000</value>
   </property>
@@ -117,7 +117,7 @@
     members of the 'nfs-users1' and 'nfs-users2' groups. Set
     this to '*' to allow nfsserver user to proxy any group.
     </description>
-  </property>
+  </property> -->
   <!-- <property>
     <name>hadoop.proxyuser.nfsproxy.hosts</name>
     <value>doop-mng2.haifa.ibm.com</value>
@@ -134,13 +134,13 @@
     <name>hadoop.proxyuser.httpfs.hosts</name>
     <value>doop-mng2.haifa.ibm.com</value>
   </property> -->
-  <property>
+<!--   <property>
     <name>hadoop.security.authorization</name>
     <value>false</value>
   </property>
   <property>
     <name>hadoop.user.group.static.mapping.overrides</name>
     <value>dr.who=mapred,doop-usr;</value>
-  </property>
+  </property> -->
 </configuration>
 
