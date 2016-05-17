@@ -277,12 +277,11 @@ else
     echo "This is NOT an IBM JDK"
 fi
 
-cd $BUILD_DIR
-if [ ! $? -eq "0" ]
+if [ ! -d "${BUILD_DIR}" ]
 then
-    mkdir -p $BUILD_DIR
-    cd $BUILD_DIR
+    mkdir -p ${BUILD_DIR}
 fi
+cd ${BUILD_DIR}
 testSuccess
 
 if [ -z "$SKIPCLONE" ]; then   
