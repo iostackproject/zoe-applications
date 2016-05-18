@@ -249,7 +249,7 @@ JOSS_VERSION=pushdown-v0.2
 
 HADOOP_PATCH_NUMBER=0002
 SPARK_PATCH_NUMBER=0004   # 0003 is the version with fixed HadoopRDD (no Broadcast)  0004 is the version which tries to compile Stocator within Spark (but fails on run...)
-CSV_SPARK_PATCH_NUMBER=0005
+CSV_SPARK_PATCH_NUMBER=0006
 #STOCATOR_PATCH_NUMBER=NewSeekStructure0005
 #JOSS_PATCH_NUMBER=0001
 
@@ -277,12 +277,11 @@ else
     echo "This is NOT an IBM JDK"
 fi
 
-cd $BUILD_DIR
-if [ ! $? -eq "0" ]
+if [ ! -d "${BUILD_DIR}" ]
 then
-    mkdir -p $BUILD_DIR
-    cd $BUILD_DIR
+    mkdir -p ${BUILD_DIR}
 fi
+cd ${BUILD_DIR}
 testSuccess
 
 if [ -z "$SKIPCLONE" ]; then   
