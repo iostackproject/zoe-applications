@@ -24,12 +24,17 @@ sys.path.append('../..')
 #################################
 
 APP_NAME = 'openmpi-dyna'
-MPIRUN_COMMANDLINE = 'mpirun -hostfile hostlist /mnt/workspace/ls-dyna_mpp_s_r7_1_2_95028_x64_redhat54_ifort131_sse2_openmpi165 i=Combine.key memory=1024m memory2=512m 32ieee=yes nowait'
-MPIRUN_IMAGE = '192.168.45.252:5000/zoeapps/openmpi-centos5'
-WORKER_IMAGE = '192.168.45.252:5000/zoeapps/openmpi-centos5'
+MPIRUN_COMMANDLINE = 'mpirun -hostfile /mnt/workspace/hostlist /mnt/workspace/ls-dyna_mpp_s_r7_1_2_95028_x64_redhat54_ifort131_sse2_openmpi165 i=Combine.key memory=1024m memory2=512m 32ieee=yes nowait'
+MPIRUN_IMAGE = '172.17.131.201:5000/iostackrepo/openmpi-centos5'
+WORKER_IMAGE = '172.17.131.201:5000/iostackrepo/openmpi-centos5'
 WORKER_COUNT = 4
 CPU_COUNT_PER_WORKER = 1
 WORKER_MEMORY = 1024 ** 3
+ENV = [
+    ["LSTC_LICENSE", "network"],
+    ["LSTC_LICENSE_SERVER", "10.30.1.7"],
+    ["LSTC_LICENSE_SERVER_PORT", "31010"]
+]
 
 #####################
 # END CUSTOMIZATION #
@@ -85,8 +90,10 @@ def openmpi_app(name, mpirun_image, worker_image, mpirun_commandline, worker_cou
     }
     for i in range(worker_count):
         proc = openmpi_worker_service(i, worker_image, worker_memory)
+        proc['environment'] += ENV
         app['services'].append(proc)
     proc = openmpi_mpirun_service(mpirun_commandline, mpirun_image, worker_memory)
+    proc['environment'] += ENV
     app['services'].append(proc)
     return app
 
@@ -98,6 +105,6 @@ if __name__ == "__main__":
 
     with open('hostlist', 'w') as fp:
         for wc in range(WORKER_COUNT):
-            fp.write('mpiworker{}-mpidynademo-zoeadmin-iostack-zoe:{}\n'.format(wc, CPU_COUNT_PER_WORKER))
+            fp.write('mpiworker{}-mpidynademo-zoeadmin-iostack-zoe slots={} max-slots={}\n'.format(wc, CPU_COUNT_PER_WORKER, CPU_COUNT_PER_WORKER))
     print('Wrote MPI host list file in "hostlist", execution name set to "mpidynademo"')
 
