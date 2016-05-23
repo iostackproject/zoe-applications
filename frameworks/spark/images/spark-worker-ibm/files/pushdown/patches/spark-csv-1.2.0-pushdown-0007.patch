@@ -22,10 +22,10 @@ index 29e659a..51be6b6 100755
    if (scalaBinaryVersion.value == "2.10") false
    else false
 diff --git a/src/main/scala/com/databricks/spark/csv/CsvRelation.scala b/src/main/scala/com/databricks/spark/csv/CsvRelation.scala
-index eddd2b5..5c51a9a 100755
+index eddd2b5..c7f9499 100755
 --- a/src/main/scala/com/databricks/spark/csv/CsvRelation.scala
 +++ b/src/main/scala/com/databricks/spark/csv/CsvRelation.scala
-@@ -24,32 +24,36 @@ import org.apache.commons.csv._
+@@ -24,32 +24,35 @@ import org.apache.commons.csv._
  import org.apache.hadoop.fs.Path
  import org.slf4j.LoggerFactory
  
@@ -69,7 +69,6 @@ index eddd2b5..5c51a9a 100755
 +    extends BaseRelation with PrunedFilteredScan with InsertableRelation {
 +
 +  private val PUSHDOWN_ENABLEMENT_PROPERTY = "spark.pushdown.enabled"
-+  private val PUSHDOWN_ENABLEMENT_RELOAD_PROPERTY = "spark.pushdown.reload"
  
    /**
 -   * Limit the number of lines we'll search for a header row that isn't comment-prefixed.
@@ -79,7 +78,7 @@ index eddd2b5..5c51a9a 100755
    private val MAX_COMMENT_LINES_IN_HEADER = 10
  
    private val logger = LoggerFactory.getLogger(CsvRelation.getClass)
-@@ -99,8 +103,53 @@ case class CsvRelation protected[spark] (
+@@ -99,8 +102,53 @@ case class CsvRelation protected[spark] (
      }
    }
  
@@ -133,7 +132,7 @@ index eddd2b5..5c51a9a 100755
      val schemaFields = schema.fields
      tokenRdd(schemaFields.map(_.name)).flatMap{ tokens =>
  
-@@ -129,6 +178,132 @@ case class CsvRelation protected[spark] (
+@@ -129,6 +177,133 @@ case class CsvRelation protected[spark] (
      }
    }
  
@@ -254,13 +253,14 @@ index eddd2b5..5c51a9a 100755
 +  }
 +
 +  private def getPushdownEnablement(): Boolean = {
-+    var conf = sqlContext.sparkContext.getConf
++    // sqlEnabled is a property of the sqlContext which can be set from a jupyter notebook
++    var sqlEnabled = sqlContext.getConf(PUSHDOWN_ENABLEMENT_PROPERTY, "true")
++    if (sqlEnabled != None) {
++      sqlEnabled = sqlEnabled.trim().toLowerCase()
++    }
 +
-+    if (conf.getBoolean(PUSHDOWN_ENABLEMENT_RELOAD_PROPERTY, true)) {
-+      logger.warn(s" CsvRelation - reloading conf")
-+      conf = new SparkConf(loadDefaults = true)
-+    } 
-+    conf.getBoolean(PUSHDOWN_ENABLEMENT_PROPERTY, true)
++    logger.debug(s" CsvRelation.getPushdownEnablement() return " + sqlEnabled)
++    "true".equals(sqlEnabled)
 +  }
 +
    private def inferSchema(): StructType = {
