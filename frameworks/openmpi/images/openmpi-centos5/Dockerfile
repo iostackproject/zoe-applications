@@ -20,6 +20,7 @@ RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so
 RUN mkdir -p /root/.ssh
 RUN ssh-keygen -q -t rsa -N '' -f /root/.ssh/id_rsa
 RUN cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
+COPY files/mpirun.sh /usr/local/bin
 
 EXPOSE 22
 

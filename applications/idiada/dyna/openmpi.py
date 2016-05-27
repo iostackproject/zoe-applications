@@ -24,12 +24,12 @@ sys.path.append('../..')
 #################################
 
 APP_NAME = 'openmpi-dyna'
-MPIRUN_COMMANDLINE = 'mpirun -hostfile /mnt/workspace/hostlist /mnt/workspace/ls-dyna_mpp_s_r7_1_2_95028_x64_redhat54_ifort131_sse2_openmpi165 i=Combine.key memory=1024m memory2=512m 32ieee=yes nowait'
+MPIRUN_COMMANDLINE = 'mpirun --mca oob_tcp_if_include eth0 --mca btl_tcp_if_include eth0 -x LSTC_LICENSE_SERVER_PORT -x LSTC_LICENSE_SERVER -x LSTC_LICENSE -hostfile hostlist -wdir /mnt/workspace /mnt/workspace/ls-dyna_mpp_s_r7_1_2_95028_x64_redhat54_ifort131_sse2_openmpi165 i=Combine.key memory=1024m memory2=512m 32ieee=yes nowait'
 MPIRUN_IMAGE = '172.17.131.201:5000/iostackrepo/openmpi-centos5'
 WORKER_IMAGE = '172.17.131.201:5000/iostackrepo/openmpi-centos5'
 WORKER_COUNT = 4
 CPU_COUNT_PER_WORKER = 1
-WORKER_MEMORY = 1024 ** 3
+WORKER_MEMORY = 5 * (1024 ** 3)
 ENV = [
     ["LSTC_LICENSE", "network"],
     ["LSTC_LICENSE_SERVER", "10.30.1.7"],
