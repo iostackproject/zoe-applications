@@ -66,14 +66,27 @@ def spark_jupyter_notebook_ibm_app(name,
     return app
 
 
-if __name__ == "__main__":
-    if DOCKER_REGISTRY is not None:
-        SPARK_MASTER_IMAGE = DOCKER_REGISTRY + '/' + SPARK_MASTER_IMAGE
-        SPARK_WORKER_IMAGE = DOCKER_REGISTRY + '/' + SPARK_WORKER_IMAGE
-        NOTEBOOK_IMAGE = DOCKER_REGISTRY + '/' + NOTEBOOK_IMAGE
+def create_app(app_name=APP_NAME, notebook_memory_limit=NOTEBOOK_MEMORY_LIMIT,
+               spark_master_memory_limit=SPARK_MASTER_MEMORY_LIMIT, spark_worker_memory_limit=SPARK_WORKER_MEMORY_LIMIT,
+               spark_worker_cores=SPARK_WORKER_CORES, spark_worker_count=SPARK_WORKER_COUNT,
+               docker_registry=DOCKER_REGISTRY, spark_master_image=SPARK_MASTER_IMAGE,
+               spark_worker_image=SPARK_WORKER_IMAGE, notebook_image=NOTEBOOK_IMAGE):
+    if docker_registry is not None:
+        spark_master_image = docker_registry + '/' + spark_master_image
+        spark_worker_image = docker_registry + '/' + spark_worker_image
+        notebook_image = docker_registry + '/' + notebook_image
 
-    app_dict = spark_jupyter_notebook_ibm_app(APP_NAME, NOTEBOOK_MEMORY_LIMIT, SPARK_MASTER_MEMORY_LIMIT,
-                                              SPARK_WORKER_MEMORY_LIMIT, SPARK_WORKER_CORES, SPARK_WORKER_COUNT,
-                                              SPARK_MASTER_IMAGE, SPARK_WORKER_IMAGE, NOTEBOOK_IMAGE)
+    return spark_jupyter_notebook_ibm_app(app_name, notebook_memory_limit, spark_master_memory_limit,
+                                          spark_worker_memory_limit, spark_worker_cores, spark_worker_count,
+                                          spark_master_image, spark_worker_image, notebook_image)
+
+
+if __name__ == "__main__":
+    app_dict = create_app(app_name=APP_NAME, notebook_memory_limit=NOTEBOOK_MEMORY_LIMIT,
+                          spark_master_memory_limit=SPARK_MASTER_MEMORY_LIMIT,
+                          spark_worker_memory_limit=SPARK_WORKER_MEMORY_LIMIT,
+                          spark_worker_cores=SPARK_WORKER_CORES, spark_worker_count=SPARK_WORKER_COUNT,
+                          docker_registry=DOCKER_REGISTRY, spark_master_image=SPARK_MASTER_IMAGE,
+                          spark_worker_image=SPARK_WORKER_IMAGE, notebook_image=NOTEBOOK_IMAGE)
     json.dump(app_dict, sys.stdout, sort_keys=True, indent=4)
     sys.stdout.write('\n')
