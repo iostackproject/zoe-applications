@@ -17,6 +17,7 @@
 
 import sys
 import json
+
 sys.path.append('../..')
 
 #################################
@@ -24,17 +25,19 @@ sys.path.append('../..')
 #################################
 
 APP_NAME = 'openmpi-dyna'
-MPIRUN_COMMANDLINE = 'mpirun --mca oob_tcp_if_include eth0 --mca btl_tcp_if_include eth0 -x LSTC_LICENSE_SERVER_PORT -x LSTC_LICENSE_SERVER -x LSTC_LICENSE -hostfile hostlist -wdir /mnt/workspace /mnt/workspace/ls-dyna_mpp_s_r7_1_2_95028_x64_redhat54_ifort131_sse2_openmpi165 i=Combine.key memory=1024m memory2=512m 32ieee=yes nowait'
-MPIRUN_IMAGE = '172.17.131.201:5000/iostackrepo/openmpi-centos5'
-WORKER_IMAGE = '172.17.131.201:5000/iostackrepo/openmpi-centos5'
+WORKER_MEMORY = 5 * (1024 ** 3)
 WORKER_COUNT = 4
 CPU_COUNT_PER_WORKER = 1
-WORKER_MEMORY = 5 * (1024 ** 3)
+DOCKER_REGISTRY = '172.17.131.201:5000'  # Set to None to use images from the Docker Hub
+MPIRUN_IMAGE = 'iostackrepo/openmpi-centos5'
+WORKER_IMAGE = 'iostackrepo/openmpi-centos5'
+MPIRUN_COMMANDLINE = 'mpirun --mca oob_tcp_if_include eth0 --mca btl_tcp_if_include eth0 -x LSTC_LICENSE_SERVER_PORT -x LSTC_LICENSE_SERVER -x LSTC_LICENSE -hostfile hostlist -wdir /mnt/workspace /mnt/workspace/ls-dyna_mpp_s_r7_1_2_95028_x64_redhat54_ifort131_sse2_openmpi165 i=Combine.key memory=1024m memory2=512m 32ieee=yes nowait'
 ENV = [
     ["LSTC_LICENSE", "network"],
     ["LSTC_LICENSE_SERVER", "10.30.1.7"],
     ["LSTC_LICENSE_SERVER_PORT", "31010"]
 ]
+
 
 #####################
 # END CUSTOMIZATION #
@@ -98,13 +101,25 @@ def openmpi_app(name, mpirun_image, worker_image, mpirun_commandline, worker_cou
     return app
 
 
-if __name__ == "__main__":
-    app_dict = openmpi_app(APP_NAME, MPIRUN_IMAGE, WORKER_IMAGE, MPIRUN_COMMANDLINE, WORKER_COUNT, WORKER_MEMORY)
-    json.dump(app_dict, open('zoeapp.json', 'w'), sort_keys=True, indent=4)
-    print('Wrote application description to "zoeapp.json"')
+def create_app(app_name=APP_NAME, mpirun_image=MPIRUN_IMAGE, worker_image=WORKER_IMAGE,
+               mpi_commandline=MPIRUN_COMMANDLINE, worker_count=WORKER_COUNT, worker_memory=WORKER_MEMORY,
+               docker_registry=DOCKER_REGISTRY, cpu_count_per_worker=CPU_COUNT_PER_WORKER):
+    if docker_registry is not None:
+        mpirun_image = docker_registry + '/' + mpirun_image
+        worker_image = docker_registry + '/' + worker_image
 
     with open('hostlist', 'w') as fp:
-        for wc in range(WORKER_COUNT):
-            fp.write('mpiworker{}-mpidynademo-zoeadmin-iostack-zoe slots={} max-slots={}\n'.format(wc, CPU_COUNT_PER_WORKER, CPU_COUNT_PER_WORKER))
+        for wc in range(worker_count):
+            fp.write(
+                'mpiworker{}-mpidynademo-zoeadmin-iostack-zoe slots={} max-slots={}\n'.format(wc, cpu_count_per_worker,
+                                                                                              cpu_count_per_worker))
     print('Wrote MPI host list file in "hostlist", execution name set to "mpidynademo"')
+    return openmpi_app(app_name, mpirun_image, worker_image, mpi_commandline, worker_count, worker_memory)
 
+
+if __name__ == "__main__":
+    app_dict = create_app(app_name=APP_NAME, mpirun_image=MPIRUN_IMAGE, worker_image=WORKER_IMAGE,
+                          mpi_commandline=MPIRUN_COMMANDLINE, worker_count=WORKER_COUNT, worker_memory=WORKER_MEMORY,
+                          docker_registry=DOCKER_REGISTRY, cpu_count_per_worker=CPU_COUNT_PER_WORKER)
+    json.dump(app_dict, open('zoeapp.json', 'w'), sort_keys=True, indent=4)
+    print('Wrote application description to "zoeapp.json"')

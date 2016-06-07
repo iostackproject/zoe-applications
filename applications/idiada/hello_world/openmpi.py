@@ -17,6 +17,7 @@
 
 import sys
 import json
+
 sys.path.append('../..')
 
 #################################
@@ -24,12 +25,14 @@ sys.path.append('../..')
 #################################
 
 APP_NAME = 'openmpi-hello'
-MPIRUN_COMMANDLINE = 'mpirun -hostfile hostlist MPI_Hello'
-MPIRUN_IMAGE = '192.168.45.252:5000/zoeapps/openmpi-ubuntu14'
-WORKER_IMAGE = '192.168.45.252:5000/zoeapps/openmpi-ubuntu14'
+WORKER_MEMORY = 1024 ** 3
 WORKER_COUNT = 4
 CPU_COUNT_PER_WORKER = 1
-WORKER_MEMORY = 1024 ** 3
+DOCKER_REGISTRY = '172.17.131.201:5000'  # Set to None to use images from the Docker Hub
+MPIRUN_IMAGE = 'zoeapps/openmpi-ubuntu14'
+WORKER_IMAGE = 'zoeapps/openmpi-ubuntu14'
+MPIRUN_COMMANDLINE = 'mpirun -hostfile hostlist MPI_Hello'
+
 
 #####################
 # END CUSTOMIZATION #
@@ -91,13 +94,21 @@ def openmpi_app(name, mpirun_image, worker_image, mpirun_commandline, worker_cou
     return app
 
 
-if __name__ == "__main__":
-    app_dict = openmpi_app(APP_NAME, MPIRUN_IMAGE, WORKER_IMAGE, MPIRUN_COMMANDLINE, WORKER_COUNT, WORKER_MEMORY)
-    json.dump(app_dict, open('zoeapp.json', 'w'), sort_keys=True, indent=4)
-    print('Wrote application description to "zoeapp.json"')
+def create_app(app_name=APP_NAME, mpirun_image=MPIRUN_IMAGE, worker_image=WORKER_IMAGE,
+               mpi_commandline=MPIRUN_COMMANDLINE, worker_count=WORKER_COUNT, worker_memory=WORKER_MEMORY,
+               docker_registry=DOCKER_REGISTRY, cpu_count_per_worker=CPU_COUNT_PER_WORKER):
+    if docker_registry is not None:
+        mpirun_image = docker_registry + '/' + mpirun_image
+        worker_image = docker_registry + '/' + worker_image
 
     with open('hostlist', 'w') as fp:
-        for wc in range(WORKER_COUNT):
-            fp.write('mpiworker{}-mpihellodemo-zoeadmin-iostack-zoe:{}\n'.format(wc, CPU_COUNT_PER_WORKER))
-    print('Wrote MPI host list file in "hostlist", execution name set to "mpihellodemo"')
+        for wc in range(worker_count):
+            fp.write('mpiworker{}-mpihellodemo-zoeadmin-iostack-zoe:{}\n'.format(wc, cpu_count_per_worker))
+        print('Wrote MPI host list file in "hostlist", execution name set to "mpihellodemo"')
+    return openmpi_app(app_name, mpirun_image, worker_image, mpi_commandline, worker_count, worker_memory)
 
+
+if __name__ == "__main__":
+    app_dict = create_app(APP_NAME, MPIRUN_IMAGE, WORKER_IMAGE, MPIRUN_COMMANDLINE, WORKER_COUNT, WORKER_MEMORY)
+    json.dump(app_dict, open('zoeapp.json', 'w'), sort_keys=True, indent=4)
+    print('Wrote application description to "zoeapp.json"')

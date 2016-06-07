@@ -45,7 +45,11 @@ def sleeper_app(name, sleep_duration):
     }
     return app
 
+
+def create_app(app_name=APP_NAME, sleep_duration=SLEEP_DURATION):
+    return sleeper_app(app_name, sleep_duration)
+
 if __name__ == "__main__":
-    app_dict = sleeper_app(APP_NAME, SLEEP_DURATION)
+    app_dict = create_app(app_name=APP_NAME, sleep_duration=SLEEP_DURATION)
     json.dump(app_dict, sys.stdout, sort_keys=True, indent=4)
     sys.stdout.write('\n')

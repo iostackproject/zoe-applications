@@ -47,7 +47,11 @@ def copier_app(app_name, src_volume_host_path, src_path, dst_path):
     }
     return app
 
+
+def create_app(app_name=APP_NAME, src_host_path=SRC_HOST_PATH, src_path=SRC_PATH, dst_path=DST_PATH):
+    return copier_app(app_name, src_host_path, src_path, dst_path)
+
 if __name__ == "__main__":
-    app_dict = copier_app(APP_NAME, SRC_HOST_PATH, SRC_PATH, DST_PATH)
+    app_dict = create_app(app_name=APP_NAME, src_host_path=SRC_HOST_PATH, src_path=SRC_PATH, dst_path=DST_PATH)
     json.dump(app_dict, sys.stdout, sort_keys=True, indent=4)
     sys.stdout.write('\n')
