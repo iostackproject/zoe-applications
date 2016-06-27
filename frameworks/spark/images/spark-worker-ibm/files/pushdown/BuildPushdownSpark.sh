@@ -244,7 +244,7 @@ echo "Pushdown build started with $BASENAME version $VERSION ...started at " `da
 HADOOP_VERSION=2.7.1   # with 2.6.0 the swift test from local spark VM fails
 SPARK_VERSION=1.6.1
 SPARK_CSV_VERSION=1.2.0
-STOCATOR_VERSION=pushdown-v0.3
+STOCATOR_VERSION=pushdown-v0.4
 JOSS_VERSION=pushdown-v0.2
 
 HADOOP_PATCH_NUMBER=0002
