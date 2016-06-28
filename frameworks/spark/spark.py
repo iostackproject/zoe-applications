@@ -35,9 +35,13 @@ def spark_master_service(mem_limit, image):
             }
         ],
         'environment': [
-            ["SPARK_MASTER_IP", "spark-master-{execution_name}-{user_name}-{deployment_name}-zoe.{user_name}-{deployment_name}-zoe"],
+            ["SPARK_MASTER_IP", "spark-master-0-{execution_name}-{user_name}-{deployment_name}-zoe.{user_name}-{deployment_name}-zoe"],
+            ["HADOOP_USER_NAME", "{user_name}"]
         ],
-        'networks': []
+        'networks': [],
+        'total_count': 1,
+        'essential_count': 1,
+        'startup_order': 0
     }
     return service
 
@@ -57,32 +61,33 @@ def spark_worker_service(count, mem_limit, cores, image):
     :return: a list of service entries
     """
     worker_ram = mem_limit - (1024 ** 3) - (512 * 1025 ** 2)
-    ret = []
-    for i in range(count):
-        service = {
-            'name': "spark-worker{}".format(i),
-            'docker_image': image,
-            'monitor': False,
-            'required_resources': {"memory": mem_limit},
-            'ports': [
-                {
-                    'name': "Spark worker web interface",
-                    'protocol': "http",
-                    'port_number': 8081,
-                    'path': "/",
-                    'is_main_endpoint': False
-                }
-            ],
-            'environment': [
-                ["SPARK_WORKER_CORES", str(cores)],
-                ["SPARK_WORKER_RAM", str(worker_ram)],
-                ["SPARK_MASTER_IP", "spark-master-{execution_name}-{user_name}-{deployment_name}-zoe.{user_name}-{deployment_name}-zoe"],
-                ["SPARK_LOCAL_IP", "spark-worker" + str(i) + "-{execution_name}-{user_name}-{deployment_name}-zoe.{user_name}-{deployment_name}-zoe"]
-            ],
-            'networks': []
-        }
-        ret.append(service)
-    return ret
+    service = {
+        'name': "spark-worker",
+        'docker_image': image,
+        'monitor': False,
+        'required_resources': {"memory": mem_limit},
+        'ports': [
+            {
+                'name': "Spark worker web interface",
+                'protocol': "http",
+                'port_number': 8081,
+                'path': "/",
+                'is_main_endpoint': False
+            }
+        ],
+        'environment': [
+            ["SPARK_WORKER_CORES", str(cores)],
+            ["SPARK_WORKER_RAM", str(worker_ram)],
+            ["SPARK_MASTER_IP", "spark-master-0-{execution_name}-{user_name}-{deployment_name}-zoe.{user_name}-{deployment_name}-zoe"],
+            ["SPARK_LOCAL_IP", "spark-worker-{index}-{execution_name}-{user_name}-{deployment_name}-zoe.{user_name}-{deployment_name}-zoe"],
+            ["HADOOP_USER_NAME", "{user_name}"]
+        ],
+        'networks': [],
+        'total_count': count,
+        'essential_count': 1,
+        'startup_order': 1
+    }
+    return service
 
 
 def spark_submit_service(mem_limit, worker_mem_limit, image, command):
@@ -109,9 +114,13 @@ def spark_submit_service(mem_limit, worker_mem_limit, image, command):
             }
         ],
         'environment': [
-            ["SPARK_MASTER_IP", "spark-master-{execution_name}-{user_name}-{deployment_name}-zoe.{user_name}-{deployment_name}-zoe"],
-            ["SPARK_EXECUTOR_RAM", str(executor_ram)]
+            ["SPARK_MASTER_IP", "spark-master-0-{execution_name}-{user_name}-{deployment_name}-zoe.{user_name}-{deployment_name}-zoe"],
+            ["SPARK_EXECUTOR_RAM", str(executor_ram)],
+            ["HADOOP_USER_NAME", "{user_name}"]
         ],
-        'command': command
+        'command': command,
+        'total_count': 1,
+        'essential_count': 1,
+        'startup_order': 2
     }
     return service
