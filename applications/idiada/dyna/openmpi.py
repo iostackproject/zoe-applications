@@ -44,21 +44,24 @@ ENV = [
 #####################
 
 
-def openmpi_worker_service(counter, image, worker_memory):
+def openmpi_worker_service(count, image, worker_memory):
     """
     :type counter: int
     :type worker_memory: int
     :rtype: dict
     """
     service = {
-        'name': "mpiworker{}".format(counter),
+        'name': "mpiworker",
         'docker_image': image,
         'monitor': False,
         'required_resources': {"memory": worker_memory},
         'ports': [],
         'environment': [],
         'volumes': [],
-        'command': ''
+        'command': '',
+        'total_count': count,
+        'essential_count': count,
+        'startup_order': 0
     }
     return service
 
@@ -77,7 +80,10 @@ def openmpi_mpirun_service(mpirun_commandline, image, worker_memory):
         'ports': [],
         'environment': [],
         'volumes': [],
-        'command': mpirun_commandline
+        'command': mpirun_commandline,
+        'total_count': 1,
+        'essential_count': 1,
+        'startup_order': 1
     }
     return service
 
@@ -85,16 +91,15 @@ def openmpi_mpirun_service(mpirun_commandline, image, worker_memory):
 def openmpi_app(name, mpirun_image, worker_image, mpirun_commandline, worker_count, worker_memory):
     app = {
         'name': name,
-        'version': 1,
+        'version': 2,
         'will_end': True,
         'priority': 512,
         'requires_binary': True,
         'services': []
     }
-    for i in range(worker_count):
-        proc = openmpi_worker_service(i, worker_image, worker_memory)
-        proc['environment'] += ENV
-        app['services'].append(proc)
+    proc = openmpi_worker_service(worker_count, worker_image, worker_memory)
+    proc['environment'] += ENV
+    app['services'].append(proc)
     proc = openmpi_mpirun_service(mpirun_commandline, mpirun_image, worker_memory)
     proc['environment'] += ENV
     app['services'].append(proc)
