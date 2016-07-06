@@ -34,6 +34,10 @@ chown -R $NB_USER /home/$NB_USER/work /home/$NB_USER/.jupyter /home/$NB_USER/.lo
 
 cd /home/$NB_USER/work
 
+# Enables the ipywidgets
+jupyter nbextension enable --py --sys-prefix widgetsnbextension
+
+# Start the notebook as $NB_USER
 exec su $NB_USER -c "env PATH=$PATH jupyter notebook $*"
 
 exit
