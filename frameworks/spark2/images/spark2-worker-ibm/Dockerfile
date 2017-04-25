@@ -35,9 +35,9 @@ WORKDIR /usr/local/src
 RUN git clone https://github.com/apache/spark.git
 WORKDIR /usr/local/src/spark
 RUN git checkout tags/v$SPARK_VERSION
-WORKDIR /user/local/src/spark/sql/core/src
+WORKDIR /usr/local/src/spark/sql/core/src
 RUN git apply /opt/pushdown/patches/sparkFileFilters-17Apr24.patch
-WORKDIR /user/local/src/spark
+WORKDIR /usr/local/src/spark
 RUN mvn -Phadoop-$HADOOP_VERSION -Dhadoop.version=$HADOOP_VERSION.0 -DskipTests package
 WORKDIR /opt
 RUN ln -s /user/local/src/spark spark
