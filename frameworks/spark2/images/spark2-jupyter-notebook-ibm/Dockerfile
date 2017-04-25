@@ -24,16 +24,6 @@ RUN apt-get purge -y maven
 RUN wget "http://mirror.olnevhost.net/pub/apache/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz" -O - | tar -xz -C /usr/local/
 RUN ln -s "/usr/local/apache-maven-${MAVEN_VERSION}/bin/mvn" /usr/bin/mvn
 
-# IBM-STOCATOR Installation
-ENV STOCATOR_VERSION 1.0.9
-WORKDIR /usr/local/src/
-RUN git clone https://github.com/SparkTC/stocator.git
-WORKDIR /usr/local/src/stocator
-#RUN git checkout tags/v$STOCATOR_VERSION
-RUN mvn install
-RUN mvn clean package -Pall-in-one
-RUN ln -s /usr/local/src/stocator/target/stocator-${STOCATOR_VERSION}-SNAPSHOT.jar /opt/spark/stocator-${STOCATOR_VERSION}.jar
-
 #IBM-SPARK Installation
 ARG SPARK_VERSION
 ENV SPARK_VERSION ${SPARK_VERSION:-2.1.0}
@@ -53,6 +43,16 @@ WORKDIR /opt
 RUN ln -s /user/local/src/spark spark
 ENV SPARK_HOME /opt/spark
 ENV PATH /opt/spark/bin:/opt/spark/sbin:${PATH}
+
+# IBM-STOCATOR Installation
+ENV STOCATOR_VERSION 1.0.9
+WORKDIR /usr/local/src/
+RUN git clone https://github.com/SparkTC/stocator.git
+WORKDIR /usr/local/src/stocator
+#RUN git checkout tags/v$STOCATOR_VERSION
+RUN mvn install
+RUN mvn clean package -Pall-in-one
+RUN ln -s /usr/local/src/stocator/target/stocator-${STOCATOR_VERSION}-SNAPSHOT.jar /opt/spark/stocator-${STOCATOR_VERSION}.jar
 
 RUN apt-get update && apt-get install -y --force-yes --no-install-recommends \
     python-dev \
