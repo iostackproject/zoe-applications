@@ -29,6 +29,7 @@ ARG SPARK_VERSION
 ENV SPARK_VERSION ${SPARK_VERSION:-2.1.0}
 ARG HADOOP_VERSION
 ENV HADOOP_VERSION ${HADOOP_VERSION:-2.6}
+ENV MAVEN_OPTS "-Xmx2g -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=512m"
 
 COPY files/pushdown/ /opt/pushdown/
 WORKDIR /usr/local/src
