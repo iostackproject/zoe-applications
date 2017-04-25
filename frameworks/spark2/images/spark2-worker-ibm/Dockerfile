@@ -53,7 +53,7 @@ WORKDIR /usr/local/src/stocator
 #RUN git checkout tags/v$STOCATOR_VERSION
 RUN mvn install
 RUN mvn clean package -Pall-in-one
-RUN ln -s /usr/local/src/stocator/target/stocator-${STOCATOR_VERSION}-SNAPSHOT.jar /opt/spark/stocator-${STOCATOR_VERSION}.jar
+RUN ln -s /usr/local/src/stocator/target/stocator-${STOCATOR_VERSION}-SNAPSHOT-jar-with-dependencies.jar /opt/spark/stocator-${STOCATOR_VERSION}.jar
 
 RUN apt-get update && apt-get install -y --force-yes --no-install-recommends \
     python-dev \
