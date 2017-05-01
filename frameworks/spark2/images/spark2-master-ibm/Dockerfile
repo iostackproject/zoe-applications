@@ -55,19 +55,6 @@ RUN mvn install
 RUN mvn clean package -Pall-in-one
 RUN ln -s /usr/local/src/stocator/target/stocator-${STOCATOR_VERSION}-SNAPSHOT-jar-with-dependencies.jar /opt/spark/stocator-${STOCATOR_VERSION}.jar
 
-COPY files/pushdown/ /opt/pushdown/
-WORKDIR /usr/local/src
-RUN git clone https://github.com/apache/spark.git
-WORKDIR /usr/local/src/spark
-RUN got checkout tags/v$SPARK_VERSION
-WORKDIR /user/local/src/spark/sql/core/src
-RUN git apply /opt/pushdown/patches/sparkFileFilters-17Apr24.patch
-WORKDIR /user/local/src/spark
-RUN mvn -Phadoop-$HADOOP_VERSION -Dhadoop.version=$HADOOP_VERSION.0 -DskipTests package
-WORKDIR /opt
-RUN ln -s /user/local/src/spark spark
-ENV SPARK_HOME /opt/spark
-ENV PATH /opt/spark/bin:/opt/spark/sbin:${PATH}
 
 COPY files/* /opt/
 RUN chmod +x /opt/*.sh
