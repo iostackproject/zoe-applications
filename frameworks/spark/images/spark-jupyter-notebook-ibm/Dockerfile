@@ -150,7 +150,6 @@ USER root
 RUN curl http://central.maven.org/maven2/org/apache/commons/commons-csv/1.2/commons-csv-1.2.jar -o /opt/spark/org.apache.commons_commons-csv-1.2.jar
 RUN curl http://central.maven.org/maven2/com/univocity/univocity-parsers/1.5.6/univocity-parsers-1.5.6.jar -o /opt/spark/com.univocity_univocity-parsers-1.5.6.jar
 
-COPY files/spark-defaults.conf /opt/spark-defaults.conf
 
 # Configure container startup as root
 EXPOSE 4040 8888 
@@ -167,6 +166,7 @@ RUN mkdir -p /home/$NB_USER/.ipython/profile_default/startup/
 COPY files/00-pyspark-setup.py /home/$NB_USER/.ipython/profile_default/startup/
 RUN chown -R $NB_USER:users /home/$NB_USER/.ipython
 
-COPY files/core-site.xml /opt
-COPY files/hdfs-site.xml /opt
+COPY files/core-site.xml ${SPARK_HOME}/conf
+COPY files/hdfs-site.xml ${SPARK_HOME}/conf
+COPY files/spark-defaults.conf ${SPARK_HOME}/conf
 
