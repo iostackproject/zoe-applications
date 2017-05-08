@@ -145,7 +145,7 @@ RUN conda install --yes \
 
 RUN /opt/conda/bin/pip install thunder-python showit
 
-#COPY files/spark-defaults.conf /opt/spark-defaults.conf
+COPY files/spark-defaults.conf /opt/spark-defaults.conf
 
 # Configure container startup as root
 EXPOSE 4040 8888
