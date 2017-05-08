@@ -17,10 +17,10 @@
 <!-- Put site-specific property overrides in this file. -->
 
 <configuration>
-<property>
-       <name>fs.defaultFS</name>
-       <value>hdfs://XXX_NAMENODE_HOST:8020/</value>
-</property>
+    <!--<property>-->
+        <!--<name>fs.defaultFS</name>-->
+        <!--<value>hdfs://XXX_NAMENODE_HOST:8020/</value>-->
+    <!--</property>-->
   <!-- For Stocator: -->
   <property>
     <name>fs.swift2d.impl</name>
@@ -54,21 +54,21 @@
   <!--   <name>fs.swift2d.service.PROVIDER.block.size</name> -->
   <!--   <value>1</value> -->
   <!-- </property> -->
-  <property>
-    <name>fs.swift2d.service.sahara.block.size</name>   
-    <!-- WARNING value is in KB. So that 131072 corresponds to 128 MB -->
-    <!-- WARNING: as of April 13th drop, block.size should be less    -->
-    <!--          than the size of accessed files                     -->
-    <value>131072</value>
-  </property>
-  <property>
-    <name>fs.swift2d.service.sahara.csv.record.delimiter</name>   
-    <value>"\n"</value>
-  </property>
-  <property>
-    <name>fs.swift2d.service.sahara.max.record.size</name>   
-    <value>2048</value>
-  </property>
+  <!--<property>-->
+    <!--<name>fs.swift2d.service.sahara.block.size</name>   -->
+    <!--&lt;!&ndash; WARNING value is in KB. So that 131072 corresponds to 128 MB &ndash;&gt;-->
+    <!--&lt;!&ndash; WARNING: as of April 13th drop, block.size should be less    &ndash;&gt;-->
+    <!--&lt;!&ndash;          than the size of accessed files                     &ndash;&gt;-->
+    <!--<value>131072</value>-->
+  <!--</property>-->
+  <!--<property>-->
+    <!--<name>fs.swift2d.service.sahara.csv.record.delimiter</name>   -->
+    <!--<value>"\n"</value>-->
+  <!--</property>-->
+  <!--<property>-->
+    <!--<name>fs.swift2d.service.sahara.max.record.size</name>   -->
+    <!--<value>2048</value>-->
+  <!--</property>-->
   <!-- YARN Cluster definition : -->
 <!--   <property>
     <name>fs.defaultFS</name>
