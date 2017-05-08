@@ -145,8 +145,6 @@ RUN conda install --yes \
 
 RUN /opt/conda/bin/pip install thunder-python showit
 
-COPY files/spark-defaults.conf /opt/spark-defaults.conf
-
 # Configure container startup as root
 EXPOSE 4040 8888
 WORKDIR /root/work
@@ -160,5 +158,6 @@ COPY files/jupyter_notebook_config.py /root/.jupyter/
 RUN mkdir -p /root/.ipython/profile_default/startup/
 COPY files/00-pyspark-setup.py /root/.ipython/profile_default/startup/
 
-COPY files/core-site.xml /opt
-COPY files/hdfs-site.xml /opt
+COPY files/core-site.xml ${SPARK_HOME}/conf
+COPY files/hdfs-site.xml ${SPARK_HOME}/conf
+COPY files/spark-defaults.conf ${SPARK_HOME}/conf
