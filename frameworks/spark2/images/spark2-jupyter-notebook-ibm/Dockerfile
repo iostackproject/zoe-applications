@@ -160,4 +160,5 @@ COPY files/00-pyspark-setup.py /root/.ipython/profile_default/startup/
 
 COPY files/core-site.xml ${SPARK_HOME}/conf
 COPY files/hdfs-site.xml ${SPARK_HOME}/conf
-RUN cat files/spark-defaults.conf | sed -e "s/XXX_STOCATOR_VERSION/${STOCATOR_VERSION}/" > ${SPARK_HOME}/conf/spark-defaults.conf
+COPY files/spark-defaults.conf /opt
+RUN cat /opt/spark-defaults.conf | sed -e "s/XXX_STOCATOR_VERSION/${STOCATOR_VERSION}/" > ${SPARK_HOME}/conf/spark-defaults.conf
