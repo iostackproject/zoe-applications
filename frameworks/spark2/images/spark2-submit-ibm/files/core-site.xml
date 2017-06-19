@@ -17,10 +17,10 @@
 <!-- Put site-specific property overrides in this file. -->
 
 <configuration>
-    <property>
+<!--     <property>
         <name>fs.defaultFS</name>
         <value>hdfs://XXX_NAMENODE_HOST:8020/</value>
-    </property>
+    </property> -->
   <!-- For Stocator: -->
   <property>
     <name>fs.swift2d.impl</name>

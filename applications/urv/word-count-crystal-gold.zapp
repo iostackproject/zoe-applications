@@ -1,0 +1,165 @@
+{
+    "disable_autorestart": false,
+    "name": "spark-submit",
+    "priority": 512,
+    "requires_binary": true,
+    "services": [
+        {
+            "docker_image": "172.17.131.201:5000/zapps/spark2-master-ibm",
+            "environment": [
+                [
+                    "SPARK_MASTER_IP",
+                    "{dns_name#self}"
+                ],
+                [
+                    "HADOOP_USER_NAME",
+                    "{user_name}"
+                ],
+                [
+                    "PYTHONHASHSEED",
+                    "42"
+                ]
+            ],
+            "essential_count": 1,
+            "monitor": false,
+            "name": "spark-master",
+            "networks": [],
+            "ports": [
+                {
+                    "expose": true,
+                    "is_main_endpoint": true,
+                    "name": "Spark master web interface",
+                    "path": "/",
+                    "port_number": 8080,
+                    "protocol": "http"
+                },
+                {
+                    "expose": true,
+                    "is_main_endpoint": false,
+                    "name": "Spark history server",
+                    "path": "/",
+                    "port_number": 18080,
+                    "protocol": "http"
+                }
+            ],
+            "required_resources": {
+                "memory": -1
+            },
+            "startup_order": 0,
+            "total_count": 1
+        },
+        {
+            "docker_image": "172.17.131.201:5000/zapps/spark2-worker-ibm",
+            "environment": [
+                [
+                    "SPARK_WORKER_CORES",
+                    "6"
+                ],
+                [
+                    "SPARK_WORKER_RAM",
+                    "21474836480"
+                ],
+                [
+                    "SPARK_MASTER_IP",
+                    "{dns_name#spark-master0}"
+                ],
+                [
+                    "SPARK_LOCAL_IP",
+                    "{dns_name#self}"
+                ],
+                [
+                    "PYTHONHASHSEED",
+                    "42"
+                ],
+                [
+                    "HADOOP_USER_NAME",
+                    "{user_name}"
+                ]
+
+            ],
+            "essential_count": 1,
+            "monitor": false,
+            "name": "spark-worker",
+            "networks": [],
+            "ports": [
+                {
+                    "is_main_endpoint": false,
+                    "name": "Spark worker web interface",
+                    "path": "/",
+                    "port_number": 8081,
+                    "protocol": "http"
+                }
+            ],
+            "required_resources": {
+                "memory": -1
+            },
+            "startup_order": 1,
+            "total_count": 2
+        },
+        {
+            "command": "--jars hadoop-swift.jar --properties-file spark-defaults-test.conf --class fr.eurecom.dsg.WordCount wc.jar WC-GBig swift://test.sahara/random.txt  swift:/test.sahara/output/",
+            "docker_image": "172.17.131.201:5000/zapps/spark2-submit-ibm",
+            "environment": [
+                [
+                    "SPARK_MASTER_IP",
+                    "{dns_name#spark-master0}"
+                ],
+                [
+                    "SPARK_EXECUTOR_RAM",
+                    "21474836480"
+                ],
+                [
+                    "HADOOP_USER_NAME",
+                    "{user_name}"
+                ],
+                [
+                    "PYTHONHASHSEED",
+                    "42"
+                ],
+                [
+                    "SPARK_DRIVER_RAM",
+                    "21474836480"
+                ]
+            ],
+            "essential_count": 1,
+            "monitor": true,
+            "name": "spark-submit",
+            "ports": [
+                {
+                    "expose": true,
+                    "is_main_endpoint": false,
+                    "name": "Spark application web interface",
+                    "path": "/",
+                    "port_number": 4040,
+                    "protocol": "http"
+                }
+            ],
+            "required_resources": {
+                "memory": -1
+            },
+            "startup_order": 2,
+            "total_count": 1
+        }
+    ],
+    "version": 2,
+    "will_end": false,
+	"plugins":{
+        "storage":[
+            {
+                "name": "crystal",
+                "tenant": "test",
+                "policy": "gold",
+                "channel": {
+                    "protocol": "rabbitmq",
+                    "host": "10.30.1.6",
+                    "port": 5672,
+                    "username": "openstack",
+                    "password": "rabbitmqastl1a4b4",
+                    "exchange": "amq.topic",
+                    "queue": "zoe"
+                }
+            }
+        ]
+    }
+
+}
