@@ -1,0 +1,89 @@
+Index: src/main/scala/org/apache/spark/sql/execution/DataSourceScanExec.scala
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/scala/org/apache/spark/sql/execution/DataSourceScanExec.scala	(date 1481853424000)
++++ src/main/scala/org/apache/spark/sql/execution/DataSourceScanExec.scala	(revision )
+@@ -156,8 +156,33 @@
+     false
+   }
+ 
+-  @transient private lazy val selectedPartitions = relation.location.listFiles(partitionFilters)
++  //@transient private lazy val selectedPartitions = relation.location.listFiles(partitionFilters)
+ 
++    @transient private lazy val prunedPartitions = relation.location.listFiles(partitionFilters)
++
++      // if a file filter was configured, an instance will be generated, then be used to filter
++    // the required files, while logging filtration statistics
++      private val filterClazzName = relation.sqlContext.conf.executionFileFilter
++
++      @transient private lazy val selectedPartitions = if (filterClazzName == "") {
++        logInfo(s"No execution file filter detected")
++        prunedPartitions
++      } else {
++        logInfo(s"Execution file filter detected: $filterClazzName")
++        val fileFilter = Utils.classForName(filterClazzName).newInstance()
++          .asInstanceOf[ExecutionFileFilter]
++        val tmpFilteredPartitions = prunedPartitions.map { part =>
++            PartitionDirectory(part.values, part.files.filter { f =>
++                fileFilter.isRequired(dataFilters, f)
++              })
++          }.filter(_.files.nonEmpty)
++        val selectedPartitionsFileCount = prunedPartitions.map(_.files.size).sum
++        val filteredPartitionsFileCount = tmpFilteredPartitions.map(_.files.size).sum
++        logInfo(s"selected $filteredPartitionsFileCount out of $selectedPartitionsFileCount files ")
++        tmpFilteredPartitions
++      }
++
++
+   override val (outputPartitioning, outputOrdering): (Partitioning, Seq[SortOrder]) = {
+     val bucketSpec = if (relation.sparkSession.sessionState.conf.bucketingEnabled) {
+       relation.bucketSpec
+@@ -579,4 +604,14 @@
+       result
+     case _ => false
+   }
++}
++
++trait ExecutionFileFilter {
++  /**
++    *
++    * @param dataFilters query predicates for actual data columns (not partitions)
++    * @param f a FileStatus that exist in the file catalog
++    * @return true if the file needs to be scanned during execution
++    */
++  def isRequired(dataFilters: Seq[Filter], f: FileStatus) : Boolean
+ }
+Index: src/main/scala/org/apache/spark/sql/internal/SQLConf.scala
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/scala/org/apache/spark/sql/internal/SQLConf.scala	(date 1481853424000)
++++ src/main/scala/org/apache/spark/sql/internal/SQLConf.scala	(revision )
+@@ -610,6 +610,15 @@
+     .booleanConf
+     .createWithDefault(false)
+ 
++  val EXECUTION_FILE_FILTER =
++        SQLConfigBuilder("spark.sql.execution.fileFilter")
++      .doc("Pluggable interface, allowing applications to add custom filtration logic," +
++          "reducing the files required to scan during query execution. The filtration" +
++          " happens after the partition pruning step, and so complimentry enabling enabling" +
++          "a finer selection.")
++      .stringConf
++      .createWithDefault("")
++
+   object Deprecated {
+     val MAPRED_REDUCE_TASKS = "mapred.reduce.tasks"
+   }
+@@ -685,6 +694,8 @@
+   def columnBatchSize: Int = getConf(COLUMN_BATCH_SIZE)
+ 
+   def numShufflePartitions: Int = getConf(SHUFFLE_PARTITIONS)
++
++  def executionFileFilter: String = getConf(EXECUTION_FILE_FILTER)
+ 
+   def targetPostShuffleInputSize: Long =
+     getConf(SHUFFLE_TARGET_POSTSHUFFLE_INPUT_SIZE)

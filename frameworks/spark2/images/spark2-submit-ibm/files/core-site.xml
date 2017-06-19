@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. See accompanying LICENSE file.
+-->
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+    <property>
+        <name>fs.defaultFS</name>
+        <value>hdfs://XXX_NAMENODE_HOST:8020/</value>
+    </property>
+  <!-- For Stocator: -->
+  <property>
+    <name>fs.swift2d.impl</name>
+    <value>com.ibm.stocator.fs.ObjectStoreFileSystem</value>
+  </property>
+ <!--  <property>
+    <name>fs.swift2d.service.ccs7.auth.url</name>
+    <value>http://9.148.41.98:35357/v2.0/tokens</value>
+  </property>
+  <property>
+    <name>fs.swift2d.service.ccs7.public</name>
+    <value>true</value>
+  </property>
+  <property>
+    <name>fs.swift2d.service.ccs7.tenant</name>
+    <value>service</value>
+  </property>
+  <property>
+    <name>fs.swift2d.service.ccs7.password</name>
+    <value>passw0rd</value>
+  </property>
+  <property>
+    <name>fs.swift2d.service.ccs7.username</name>
+    <value>swift</value>
+  </property>
+  <property>
+    <name>fs.swift2d.service.ccs7.auth.method</name>
+    <value>keystone</value>
+  </property> -->
+  <!-- <property> -->
+  <!--   <name>fs.swift2d.service.PROVIDER.block.size</name> -->
+  <!--   <value>1</value> -->
+  <!-- </property> -->
+  <!--<property>-->
+    <!--<name>fs.swift2d.service.sahara.block.size</name>   -->
+    <!--&lt;!&ndash; WARNING value is in KB. So that 131072 corresponds to 128 MB &ndash;&gt;-->
+    <!--&lt;!&ndash; WARNING: as of April 13th drop, block.size should be less    &ndash;&gt;-->
+    <!--&lt;!&ndash;          than the size of accessed files                     &ndash;&gt;-->
+    <!--<value>131072</value>-->
+  <!--</property>-->
+  <!--<property>-->
+    <!--<name>fs.swift2d.service.sahara.csv.record.delimiter</name>   -->
+    <!--<value>"\n"</value>-->
+  <!--</property>-->
+  <!--<property>-->
+    <!--<name>fs.swift2d.service.sahara.max.record.size</name>   -->
+    <!--<value>2048</value>-->
+  <!--</property>-->
+  <!-- YARN Cluster definition : -->
+<!--   <property>
+    <name>fs.defaultFS</name>
+    <value>hdfs://doop-mng1.haifa.ibm.com:8020</value>
+  </property> -->
+<!--   <property>
+    <name>io.file.buffer.size</name>
+    <value>131072</value>
+  </property> -->
+  <!--
+      <property>
+      <name>net.topology.script.file.name</name>
+      <value>/etc/hadoop/conf/rack-topology.sh</value>
+      </property>
+  -->
+  <!-- <property>
+    <name>ipc.client.idlethreshold</name>
+    <value>8000</value>
+  </property>
+  <property>
+    <name>ipc.client.connection.maxidletime</name>
+    <value>30000</value>
+  </property>
+  <property>
+    <name>fs.trash.interval</name>
+    <value>360</value>
+    <description>Number of minutes after which the checkpoint
+    gets deleted.
+    If zero, the trash feature is disabled.
+    </description>
+  </property>
+  <property>
+    <name>fs.trash.checkpoint.interval</name>
+    <value>60</value>
+    <description>Number of minutes between trash checkpoints.
+    Should be smaller or equal to fs.trash.interval.
+    Every time the checkpointer runs it creates a new checkpoint 
+    out of current and removes checkpoints created more than 
+    fs.trash.interval minutes ago.
+    </description>
+  </property>
+  <property>
+    <name>hadoop.proxyuser.nfsproxy.groups</name>
+    <value>*</value>
+    <description>The 'nfsserver' user is allowed to proxy all
+    members of the 'nfs-users1' and 'nfs-users2' groups. Set
+    this to '*' to allow nfsserver user to proxy any group.
+    </description>
+  </property> -->
+  <!-- <property>
+    <name>hadoop.proxyuser.nfsproxy.hosts</name>
+    <value>doop-mng2.haifa.ibm.com</value>
+    <description>This is the host where the nfs gateway is
+    running. Set this to '*' to allow requests from any hosts to
+    be proxied.
+    </description>
+  </property> -->
+  <!-- <property>
+    <name>hadoop.proxyuser.httpfs.groups</name>
+    <value>doop-usr</value>
+  </property>
+  <property>
+    <name>hadoop.proxyuser.httpfs.hosts</name>
+    <value>doop-mng2.haifa.ibm.com</value>
+  </property> -->
+<!--   <property>
+    <name>hadoop.security.authorization</name>
+    <value>false</value>
+  </property>
+  <property>
+    <name>hadoop.user.group.static.mapping.overrides</name>
+    <value>dr.who=mapred,doop-usr;</value>
+  </property> -->
+</configuration>
+
